@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'windows-latest'
@@ -16,10 +16,17 @@ variables:
 
 steps:
 - task: NuGetToolInstaller@1
-
+ 
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
+- task: SonarCloudPrepare@1
+  inputs:
+    SonarCloud: 'SonarCloud'
+    organization: 'dev-organization'
+    scannerMode: 'MSBuild'
+    projectKey: 'Agileproject'
+    projectName: 'Agileproject'
 
 - task: VSBuild@1
   inputs:
@@ -27,14 +34,8 @@ steps:
     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
-- task: SonarCloudPrepare@1
-  inputs:
-    SonarCloud: 'SonarConnection'
-    organization: 'dev-orgnization'
-    scannerMode: 'MSBuild'
-    projectKey: 'AgileProject'
-    projectName: 'AgileProject'
 - task: SonarCloudAnalyze@1
+
 - task: SonarCloudPublish@1
   inputs:
     pollingTimeoutSec: '300'
